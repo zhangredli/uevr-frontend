@@ -160,6 +160,10 @@
                                     <ToggleButton x:Name="m_nullifyVRPluginsCheckbox" HorizontalAlignment="Left"/>
                                     <TextBlock TextWrapping="Wrap" Text="取消VR插件"/>
                                 </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <ToggleButton x:Name="m_focusGameOnInjectionCheckbox" HorizontalAlignment="Left" IsChecked="True"/>
+                                    <TextBlock TextWrapping="Wrap" Text="Focus game on injection"/>
+                                </StackPanel>
                             </StackPanel>
                             <TextBlock x:Name="m_connectionStatus" TextWrapping="Wrap" Text="未知状态"/>
                         </StackPanel>

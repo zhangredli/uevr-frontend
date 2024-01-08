@@ -150,6 +150,7 @@ namespace UEVR {
             }
         }
     }
+
     public partial class MainWindow : Window {
         // variables
         // process list
@@ -172,6 +173,9 @@ namespace UEVR {
         private ExecutableFilter m_executableFilter = new ExecutableFilter();
         private string? m_commandLineAttachExe = null;
         private bool m_ignoreFutureVDWarnings = false;
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        public static extern void SwitchToThisWindow(IntPtr hWnd, bool fAltTab);
 
         public MainWindow() {
             InitializeComponent();
@@ -204,6 +208,7 @@ namespace UEVR {
             m_openxrRadio.IsChecked = m_mainWindowSettings.OpenXRRadio;
             m_nullifyVRPluginsCheckbox.IsChecked = m_mainWindowSettings.NullifyVRPluginsCheckbox;
             m_ignoreFutureVDWarnings = m_mainWindowSettings.IgnoreFutureVDWarnings;
+            m_focusGameOnInjectionCheckbox.IsChecked = m_mainWindowSettings.FocusGameOnInjection;
 
             m_updateTimer.Tick += (sender, e) => Dispatcher.Invoke(MainWindow_Update);
             m_updateTimer.Start();
@@ -309,6 +314,17 @@ namespace UEVR {
                 }
 
                 if (now - m_lastAutoInjectTime > oneSecond) {
+                    if (m_nullifyVRPluginsCheckbox.IsChecked == true) {
+                        IntPtr nullifierBase;
+                        if (Injector.InjectDll(process.Id, "UEVRPluginNullifier.dll", out nullifierBase) && nullifierBase.ToInt64() > 0) {
+                            if (!Injector.CallFunctionNoArgs(process.Id, "UEVRPluginNullifier.dll", nullifierBase, "nullify", true)) {
+                                //MessageBox.Show("Failed to nullify VR plugins.");
+                            }
+                        } else {
+                            //MessageBox.Show("Failed to inject plugin nullifier.");
+                        }
+                    }
+
                     string runtimeName;
 
                     if (m_openvrRadio.IsChecked == true) {
@@ -321,12 +337,29 @@ namespace UEVR {
 
                     if (Injector.InjectDll(process.Id, runtimeName)) {
                         InitializeConfig(process.ProcessName);
+
+                        try {
+                            if (m_currentConfig != null) {
+                                if (m_currentConfig["Frontend_RequestedRuntime"] != runtimeName) {
+                                    m_currentConfig["Frontend_RequestedRuntime"] = runtimeName;
+                                    RefreshConfigUI();
+                                    SaveCurrentConfig();
+                                }
+                            }
+                        } catch (Exception) {
+
+                        }
+
                         Injector.InjectDll(process.Id, "UEVRBackend.dll");
                     }
 
                     m_lastAutoInjectTime = now;
                     m_commandLineAttachExe = null; // no need anymore.
                     FillProcessList();
+                    if (m_focusGameOnInjectionCheckbox.IsChecked == true)
+                    {
+                        SwitchToThisWindow(process.MainWindowHandle, true);
+                    }
                 }
             }
         }
@@ -550,6 +583,7 @@ namespace UEVR {
             m_mainWindowSettings.OpenVRRadio = m_openvrRadio.IsChecked == true;
             m_mainWindowSettings.NullifyVRPluginsCheckbox = m_nullifyVRPluginsCheckbox.IsChecked == true;
             m_mainWindowSettings.IgnoreFutureVDWarnings = m_ignoreFutureVDWarnings;
+            m_mainWindowSettings.FocusGameOnInjection = m_focusGameOnInjectionCheckbox.IsChecked == true;
 
             m_mainWindowSettings.Save();
         }
@@ -1002,7 +1036,24 @@ namespace UEVR {
             }
 
             if (Injector.InjectDll(process.Id, runtimeName)) {
+                try {
+                    if (m_currentConfig != null) {
+                        if (m_currentConfig["Frontend_RequestedRuntime"] != runtimeName) {
+                            m_currentConfig["Frontend_RequestedRuntime"] = runtimeName;
+                            RefreshConfigUI();
+                            SaveCurrentConfig();
+                        }
+                    }
+                } catch (Exception) {
+
+                }
+
                 Injector.InjectDll(process.Id, "UEVRBackend.dll");
+            }
+
+            if (m_focusGameOnInjectionCheckbox.IsChecked == true)
+            {
+                SwitchToThisWindow(process.MainWindowHandle, true);
             }
         }
 
