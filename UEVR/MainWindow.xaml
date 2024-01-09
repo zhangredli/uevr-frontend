@@ -162,7 +162,7 @@
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal">
                                     <ToggleButton x:Name="m_focusGameOnInjectionCheckbox" HorizontalAlignment="Left" IsChecked="True"/>
-                                    <TextBlock TextWrapping="Wrap" Text="Focus game on injection"/>
+                                    <TextBlock TextWrapping="Wrap" Text="注入游戏后使游戏窗口获取焦点"/>
                                 </StackPanel>
                             </StackPanel>
                             <TextBlock x:Name="m_connectionStatus" TextWrapping="Wrap" Text="未知状态"/>
