@@ -534,10 +534,8 @@ namespace UEVR {
                 bool wantsExtract = true;
 
                 if (GameConfig.ZipContainsDLL(importPath)) {
-                    string message = "The selected config file includes a DLL (plugin), which may execute actions on your system.\n" +
-                                     "Only import configs with DLLs from trusted sources to avoid potential risks.\n" +
-                                     "Do you still want to proceed with the import?";
-                    var dialog = new YesNoDialog("DLL Warning", message);
+                    string message = "选定的配置文件包括DLL(插件)，它可能会在您的系统上执行某些操作。\n尽量仅从受信任的来源导入带有DLL的配置以避免潜在风险。\n是否仍要继续导入？";
+                    var dialog = new YesNoDialog("DLL导入提醒", message);
                     dialog.ShowDialog();
 
                     wantsExtract = dialog.DialogResultYes;
